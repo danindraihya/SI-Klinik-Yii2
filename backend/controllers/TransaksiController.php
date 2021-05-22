@@ -23,16 +23,41 @@ class TransaksiController extends \yii\web\Controller
 
     public function actionUpdate($id)
     {
+        $session = Yii::$app->session;
+        $session->open();
+
         $allTindakan = Tindakan::find()->all();
         $allObat = Obat::find()->all(null);
         $pasien = Pasien::find()->where(['id' => $id])->one();
         $allPegawai = Pegawai::find()->all();
+        $biayaObat = BiayaObat::find()
+            ->where(['pasien_id' => $id])->all();
+        $biayaTindakan = BiayaTindakan::find()
+            ->where(['pasien_id' => $id])->all();
+
+            
+
+        foreach($biayaTindakan as $tindakan) {
+            $dataTindakan = Tindakan::find()
+            ->where(['id' => $tindakan['tindakan_id']])
+            ->one();
+
+            $session->set('tindakan', [
+                $dataTindakan['id'] => [
+                    'id' => $dataTindakan->id,
+                    'nama' => $dataTindakan->nama,
+                    'biaya' => $dataTindakan->biaya
+                ]
+            ]);
+        }
 
         return $this->render('update', [
             'allTindakan' => $allTindakan,
             'allObat' => $allObat,
             'pasien' => $pasien,
-            'allPegawai' => $allPegawai
+            'allPegawai' => $allPegawai,
+            'biayaObat' => $biayaObat,
+            'biayaTindakan' => $biayaTindakan
         ]);
     }
 
@@ -138,6 +163,8 @@ class TransaksiController extends \yii\web\Controller
         $session->open();
         $total_harga = 0;
 
+        $biayaTindakan = BiayaTindakan::deleteAll('pasien_id = ' . $idPasien);
+
         if($session->get('obat')) {
             
             foreach($session->get('obat') as $obat) {
@@ -174,9 +201,6 @@ class TransaksiController extends \yii\web\Controller
         $pasien = Pasien::find()
             ->where(['id' => $idPasien])
             ->one();
-
-        $pasien->status = 1;
-        $pasien->save();
 
         return $this->redirect(['informasi/index', 
             'idPasien' => $idPasien

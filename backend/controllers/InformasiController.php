@@ -14,7 +14,6 @@ class InformasiController extends \yii\web\Controller
 
     public function actionIndex()
     {
-
         $listPasien = [];
 
         $biayaObat = (new \yii\db\Query())
@@ -35,7 +34,7 @@ class InformasiController extends \yii\web\Controller
                 array_push($listPasien, $data['pasien_id']);
             }
             
-        $data = (new \yii\db\Query())
+        $pasienBayar = (new \yii\db\Query())
             ->select(['o.pasien_id', 't.pegawai_id', 'sum(o.total_harga) as total_harga_obat', 'sum(t.total_harga) as total_harga_tindakan'])
             ->from(['o' => 'biaya_obat'])
             ->innerJoin(['t' => 'biaya_tindakan'], '`o`.`pasien_id` = `t`.`pasien_id`')
@@ -43,9 +42,18 @@ class InformasiController extends \yii\web\Controller
             ->groupBy(['o.pasien_id'])
             ->all();
         
+        $pasienSelesai = (new \yii\db\Query())
+            ->select(['o.pasien_id', 't.pegawai_id', 'sum(o.total_harga) as total_harga_obat', 'sum(t.total_harga) as total_harga_tindakan'])
+            ->from(['o' => 'biaya_obat'])
+            ->innerJoin(['t' => 'biaya_tindakan'], '`o`.`pasien_id` = `t`.`pasien_id`')
+            ->orWhere(['or', ['o.status' => 1], ['t.status' => 1]])
+            ->groupBy(['o.pasien_id'])
+            ->all();
+        
         
         return $this->render('index', [
-            'data' => $data
+            'pasienBayar' => $pasienBayar,
+            'pasienSelesai' => $pasienSelesai
         ]);
         
     }

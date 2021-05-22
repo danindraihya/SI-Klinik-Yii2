@@ -4,6 +4,8 @@ use yii\helpers\Html;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Pasien */
+use common\models\Tindakan;
+use common\models\Obat;
 
 ?>
 <div class="pasien-update">
@@ -35,6 +37,26 @@ use yii\helpers\Html;
                         </tr>
                     </thead>
                     <tbody class='tableTindakan'>
+                        <?php 
+                        
+                            foreach($biayaTindakan as $tindakan) {
+                                
+                                    $dataTindakan = Tindakan::find()
+                                        ->where(['id' => $tindakan['tindakan_id']])
+                                        ->one();
+                                ?>
+
+                                    <tr>
+                                        <td><?= $dataTindakan['id'] ?></td>
+                                        <td><?= $dataTindakan['nama'] ?></td>
+                                        <td><?= $dataTindakan['biaya'] ?></td>
+                                        <td><button data-id='<?= $dataTindakan['id'] ?>' class='hapus-tindakan' >Hapus</button></td>
+                                    </tr>
+
+                                <?php
+                            }
+
+                        ?>
                     </tbody>
             </table>
         </div>
@@ -70,6 +92,7 @@ use yii\helpers\Html;
                         </tr>
                     </thead>
                     <tbody class='tableObat'>
+                        
                     </tbody>
             </table>
         </div>
@@ -160,6 +183,7 @@ use yii\helpers\Html;
             $('.obat').val('');
 
             let jumlah = $('.jumlah-obat').val();
+            console.log(typeof(jumlah));
 
             $.ajax({
                 url: '/transaksi/tambah-obat',
@@ -171,7 +195,7 @@ use yii\helpers\Html;
                 success: function(data) {
                     console.log(data);
                     $.each(data, function(index, value) {
-                        markup = markup + "<tr><th scope='row'>"+ data[index]['id'] +"</th><td>"+ data[index]['nama'] +"</td><td>"+ data[index]['jumlah'] +"</td><td>" + data[index]['harga'] + "</td><td>"+ parseInt(data[index]['harga']) * parseInt(data[index]['jumlah']) +"</td><td><button data-id='"+ data[index]['id'] +"' class='hapus-obat' >Hapus</button></td></tr>";
+                        markup = markup + "<tr><th scope='row'>"+ data[index]['id'] +"</th><td>"+ data[index]['nama'] +"</td><td>"+ data[index]['jumlah'] +"</td><td>" + data[index]['harga'] + "</td><td>"+ parseFloat(data[index]['harga']) * parseFloat(data[index]['jumlah']) +"</td><td><button data-id='"+ data[index]['id'] +"' class='hapus-obat' >Hapus</button></td></tr>";
                     });
                     $('.tableObat').html(markup);
                 }, 
